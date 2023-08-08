@@ -1,13 +1,13 @@
-# CTB: search for XYZ and replace with plugin-specific information!
+# CTB: search for xyz and replace with plugin-specific information!
 
 [project]
-name = "sourmash_plugin_XYZ"
-description = "sourmash plugin to do XYZ."
+name = "sourmash_plugin_sra_download"
+description = "sourmash plugin to do sra_download"
 readme = "README.md"
 requires-python = ">=3.8"
 version = "0.1"
 
-dependencies = ["sourmash>=4.8.0,<5"]
+dependencies = ["sourmash>=4.8.0,<5", "kingfisher>=0.2.2"]
 
 [metadata]
 license = { text = "BSD 3-Clause License" }
@@ -16,11 +16,5 @@ license = { text = "BSD 3-Clause License" }
 # that your plugin defines; remove the rest. Multiple entry points of
 # any particular type are perfectly fine too!
 
-[project.entry-points."sourmash.load_from"]
-xyz_reader = "sourmash_plugin_xyz:load_sketches"
-
-[project.entry-points."sourmash.save_to"]
-xyz_writer = "sourmash_plugin_xyz:SaveSignatures_XYZ"
-
 [project.entry-points."sourmash.cli_script"]
-xyz_command = "sourmash_plugin_xyz:Command_XYZ"
+sra_download_command = "sourmash_plugin_sra_download:Command_sra_download"
