@@ -42,17 +42,19 @@ class Command_sra_download(CommandLinePlugin):
         # add argparse arguments here.
         debug_literal('RUNNING cmd_sra_download.__init__')
         subparser.add_argument('sra_accession', nargs='+')
-        subparser.add_argument('--output-dir', default='.')
+        subparser.add_argument('--output-dir', default=None)
         subparser.add_argument('--download-only', action='store_true', default=False, help="Only download SRA file(s) and do not sketch.")
         subparser.add_argument('--delete-fastq', action='store_true', default=False, help="Delete fastq file(s) after sketching.")
         subparser.add_argument('-m', '--download-methods', default=['ena-ftp', 'aws-http', 'prefetch'], nargs='+', choices=['ena-ftp', 'aws-http', 'prefetch', 'aws-cp', 'gcp-cp', 'ena_ascp'])
         subparser.add_argument('-t', '--threads', type=int, default=1, help='Number of threads to use for download and conversion to fastq.')
-        subparser.add_argument('--sig-extension', default='zip', help='sourmash signature file extension to use.')
+        subparser.add_argument('--sig-extension', default='zip', help='sourmash signature file extension to use.', choices=['zip', 'sig', 'sig.gz', 'sqldb'])
         subparser.add_argument('--verbose', action='store_true', default=False, help='Print verbose output.')
         subparser.add_argument('-p', '--param-string', default=[], help='sourmash signature parameters to use.', action='append')
 
     def download_sra(self, sra_accession, outdir, threads=1, download_methods = ['ena-ftp', 'aws-http', 'prefetch'], verbose=False):
         # run this kingfisher command via subprocess: kingfisher get -r ERR1739691 -m ena-ascp aws-http prefetch
+        if not outdir:
+            outdir = os.getcwd()
         if verbose:
             print(f"Downloading {sra_accession} to {outdir}")
             # print kingfisher command:
@@ -64,7 +66,8 @@ class Command_sra_download(CommandLinePlugin):
         for file in potential_files:
             # check if file exists and add to list if yes
             if os.path.exists(os.path.join(outdir, file)):
-                downloaded_files.append(file)
+                filepath = os.path.abspath(os.path.join(outdir, file))
+                downloaded_files.append(filepath)
         if len(downloaded_files) == 0:
             raise FileNotFoundError(f"Could not find downloaded file for {sra_accession}")
         else:
@@ -132,7 +135,10 @@ class Command_sra_download(CommandLinePlugin):
 
         results = []
         for sra in args.sra_accession:
-            sigfile = os.path.join(args.output_dir, f'{sra}.{args.sig_extension}')
+            if args.output_dir:
+                sigfile = os.path.join(args.output_dir, f'{sra}.{args.sig_extension}')
+            else:
+                sigfile = f'{sra}.{args.sig_extension}'
             name = f'{sra}'
             
             # download SRA file
@@ -148,7 +154,7 @@ class Command_sra_download(CommandLinePlugin):
                 if args.delete_fastq:
                     if args.verbose:
                         notify(f"Removing {fq_file}")
-                    os.remove(os.path.join(args.output_dir, fq_file))
+                    os.remove(fq_file)
         
         if not args.download_only:
             # report on results
