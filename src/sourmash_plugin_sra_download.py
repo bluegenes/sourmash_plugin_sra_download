@@ -43,20 +43,21 @@ class Command_sra_download(CommandLinePlugin):
         debug_literal('RUNNING cmd_sra_download.__init__')
         subparser.add_argument('sra_accession', nargs='+')
         subparser.add_argument('--output-dir', default='.')
-        subparser.add_argument('--tmp-dir', default=None) # /tmp
-        subparser.add_argument('--keep-fastq', action='store_true', default=False)
+        subparser.add_argument('--download-only', action='store_true', default=False)
+        subparser.add_argument('--delete-fastq', action='store_true', default=False)
+        subparser.add_argument('-m', '--download-methods', default=['ena-ftp', 'aws-http', 'prefetch'], nargs='+', choices=['ena-ftp', 'aws-http', 'prefetch', 'aws-cp', 'gcp-cp', 'ena_ascp'])
         subparser.add_argument('-t', '--threads', type=int, default=1)
-        subparser.add_argument('--sig-extension', default='.zip')
-        subparser.add_argument('-p', '--param-string', default=[],
-                       help='signature parameters to use.', action='append')
+        subparser.add_argument('--sig-extension', default='zip')
+        subparser.add_argument('--verbose', action='store_true', default=False)
+        subparser.add_argument('-p', '--param-string', default=[], help='signature parameters to use.', action='append')
 
-    def download_sra(self, sra_accession, outdir, threads=1,verbose=False):
+    def download_sra(self, sra_accession, outdir, threads=1, download_methods = ['ena-ftp', 'aws-http', 'prefetch'], verbose=False):
         # run this kingfisher command via subprocess: kingfisher get -r ERR1739691 -m ena-ascp aws-http prefetch
         if verbose:
             print(f"Downloading {sra_accession} to {outdir}")
             # print kingfisher command:
-            print(f"kingfisher get -t {threads} -r {sra_accession} -m ena-ftp aws-http prefetch")
-        subprocess.run(['kingfisher', 'get', '-t', str(threads), '-r', sra_accession, '-m', 'ena-ftp', 'aws-http', 'prefetch'], cwd=outdir)
+            print(f"kingfisher get -t {threads} -r {sra_accession} -m {' '.join(download_methods)}")
+        subprocess.run(['kingfisher', 'get', '-t', str(threads), '-r', sra_accession, '-m'] + download_methods, cwd=outdir)
         # Check if the downloaded file(s) exist
         downloaded_files = []
         potential_files = [f"{sra_accession}.fastq.gz", f"{sra_accession}_1.fastq.gz", f"{sra_accession}_2.fastq.gz"]
@@ -136,32 +137,31 @@ class Command_sra_download(CommandLinePlugin):
             name = f'{sra}'
             
             # download SRA file
-            if args.tmp_dir:
-                fq_files = self.download_sra(sra, args.tmp_dir, args.threads, verbose=args.verbose)
-            else:
-                fq_files = self.download_sra(sra, args.output_dir, args.threads, verbose=args.verbose)
+            fq_files = self.download_sra(sra, args.output_dir, args.threads, verbose=args.verbose)
 
             # now sketch
-            result = self.sketch_sig(factories, fq_files, name, sigfile, verbose=args.verbose)
-            results.append(result)
+            if not args.download_only:
+                result = self.sketch_sig(factories, fq_files, name, sigfile, verbose=args.verbose)
+                results.append(result)
 
-            # clean up tmp files
-            if not args.keep_fastq:
-                for fq_file in fq_files:
-                    if args.tmp_dir:
-                        os.remove(os.path.join(args.tmp_dir, fq_file))
-                    else:
-                        os.remove(os.path.join(args.output_dir, fq_file))
+            # clean up fastq if desired
+            for fq_file in fq_files:
+                if args.delete_fastq:
+                    if args.verbose:
+                        notify(f"Removing {fq_file}")
+                    os.remove(os.path.join(args.output_dir, fq_file))
         
-        skipped = 0
-        total = 0
-        for result in results:
-            if result is None:
-                skipped += 1
-            else:
-                assert result > 0
-                total += result
+        if not args.download_only:
+            # report on results
+            skipped = 0
+            total = 0
+            for result in results:
+                if result is None:
+                    skipped += 1
+                else:
+                    assert result > 0
+                    total += result
 
-        notify(f"Produced {total} sketches total for {len(args.sra_accession)} input files.")
-        if skipped:
-            notify(f"Skipped {skipped} input files for various reasons.")
+            notify(f"Produced {total} sketches total for {len(args.sra_accession)} input files.")
+            if skipped:
+                 notify(f"Skipped {skipped} input files for various reasons.")
