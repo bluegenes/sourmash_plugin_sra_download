@@ -2,8 +2,15 @@
 
 ## Installation
 
+Current (dev only):
+
+
 ```
-pip install sourmash_plugin_sra_download
+git clone https://github.com/sourmash-bio/sourmash_plugin_sra_download.git
+cd sourmash_plugin_sra_download
+pip install -e '.'
+
+#future: pip install sourmash_plugin_sra_download
 ```
 
 ## Usage
