@@ -43,13 +43,13 @@ class Command_sra_download(CommandLinePlugin):
         debug_literal('RUNNING cmd_sra_download.__init__')
         subparser.add_argument('sra_accession', nargs='+')
         subparser.add_argument('--output-dir', default='.')
-        subparser.add_argument('--download-only', action='store_true', default=False)
-        subparser.add_argument('--delete-fastq', action='store_true', default=False)
+        subparser.add_argument('--download-only', action='store_true', default=False, help="Only download SRA file(s) and do not sketch.")
+        subparser.add_argument('--delete-fastq', action='store_true', default=False, help="Delete fastq file(s) after sketching.")
         subparser.add_argument('-m', '--download-methods', default=['ena-ftp', 'aws-http', 'prefetch'], nargs='+', choices=['ena-ftp', 'aws-http', 'prefetch', 'aws-cp', 'gcp-cp', 'ena_ascp'])
-        subparser.add_argument('-t', '--threads', type=int, default=1)
-        subparser.add_argument('--sig-extension', default='zip')
-        subparser.add_argument('--verbose', action='store_true', default=False)
-        subparser.add_argument('-p', '--param-string', default=[], help='signature parameters to use.', action='append')
+        subparser.add_argument('-t', '--threads', type=int, default=1, help='Number of threads to use for download and conversion to fastq.')
+        subparser.add_argument('--sig-extension', default='zip', help='sourmash signature file extension to use.')
+        subparser.add_argument('--verbose', action='store_true', default=False, help='Print verbose output.')
+        subparser.add_argument('-p', '--param-string', default=[], help='sourmash signature parameters to use.', action='append')
 
     def download_sra(self, sra_accession, outdir, threads=1, download_methods = ['ena-ftp', 'aws-http', 'prefetch'], verbose=False):
         # run this kingfisher command via subprocess: kingfisher get -r ERR1739691 -m ena-ascp aws-http prefetch
@@ -121,7 +121,6 @@ class Command_sra_download(CommandLinePlugin):
         # code that we actually run.
         super().main(args)
         print('RUNNING cmd', self, args)
-        debug = 1 if args.debug else 0
         
         # build params obj & sketching factories
         factories = []
