@@ -8,7 +8,7 @@ Current (dev only):
 
 
 ```
-git clone https://github.com/sourmash-bio/sourmash_plugin_sra_download.git
+git clone https://github.com/bluegenes/sourmash_plugin_sra_download.git
 cd sourmash_plugin_sra_download
 conda env create -f environment.yml
 conda activate sourmash_sra_download
@@ -62,7 +62,7 @@ We suggest filing issues in [the main sourmash issue tracker](https://github.com
 
 ## Dev docs
 
-`sra_download` is developed at https://github.com/sourmash-bio/sourmash_plugin_sra_download.
+`sra_download` is developed at https://github.com/bluegenes/sourmash_plugin_sra_download.
 
 ### Generating a release
 
