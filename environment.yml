@@ -1,0 +1,10 @@
+name: sourmash_sra_download
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.10
+  - sourmash>4.8,<5
+  - kingfisher>0.2,<3
+  - screed>1,<2

@@ -1,5 +1,7 @@
 # sourmash_plugin_sra_download
 
+NOTE: This plugin is in development.
+
 ## Installation
 
 Current (dev only):
@@ -8,9 +10,11 @@ Current (dev only):
 ```
 git clone https://github.com/sourmash-bio/sourmash_plugin_sra_download.git
 cd sourmash_plugin_sra_download
+conda env create -f environment.yml
+conda activate sourmash_sra_download
 pip install -e '.'
 
-#future: pip install sourmash_plugin_sra_download
+#future: conda install sourmash_plugin_sra_download
 ```
 
 ## Usage
@@ -44,6 +48,13 @@ options:
                         sourmash signature parameters to use.
 
 ```
+
+For example, to get SRA Accession 
+
+```
+sourmash scripts sra_download SRR19212930 --threads 2  --verbose --download-only
+```
+
 
 ## Support
 
