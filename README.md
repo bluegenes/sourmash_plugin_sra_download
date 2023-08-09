@@ -52,7 +52,7 @@ options:
 For example, to get SRA Accession 
 
 ```
-sourmash scripts sra_download SRR19212930 --threads 2  --verbose --download-only
+sourmash scripts sra_download ERR1739691 --threads 2  --verbose --download-only
 ```
 
 
